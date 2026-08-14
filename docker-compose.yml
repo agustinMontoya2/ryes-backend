@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: branches-postgres
+    environment:
+      POSTGRES_DB: branches
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - branches-postgres-data:/var/lib/postgresql/data
+
+volumes:
+  branches-postgres-data:
