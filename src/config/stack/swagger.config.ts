@@ -11,10 +11,10 @@ export function SwaggerConfig() {
     /**
      * ---------------------------------------------------
      * @description Título de la documentación
-     * @default 'Ryes API'
+     * @default 'Branches API'
      * ---------------------------------------------------
      */
-    SWAGGER_DOCS_TITLE: process.env.SWAGGER_DOCS_TITLE || "Ryes API",
+    SWAGGER_DOCS_TITLE: process.env.SWAGGER_DOCS_TITLE || "Branches API",
 
     /**
      * ---------------------------------------------------

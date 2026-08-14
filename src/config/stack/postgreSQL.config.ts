@@ -3,10 +3,10 @@ export function PostgresqlConfig() {
     /**
      * ---------------------------------------------------
      * @description Nombre de la base de datos
-     * @default 'ryes'
+     * @default 'branches'
      * ---------------------------------------------------
      */
-    DB_NAME: process.env.DB_NAME || "ryes",
+    DB_NAME: process.env.DB_NAME || "branches",
 
     /**
      * ---------------------------------------------------

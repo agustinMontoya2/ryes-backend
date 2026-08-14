@@ -1,6 +1,6 @@
-# ryes-backend
+# branches-backend
 
-Backend de Ryes (laboratorio dental) en NestJS. Repo base creado a partir de
+Backend de sucursales (laboratorio dental) en NestJS. Repo base creado a partir de
 [`planning/BASE-PROYECTO-EXPORTABLE.md`](./planning/BASE-PROYECTO-EXPORTABLE.md):
 solo infraestructura y utilidades, sin entidades ni lógica de negocio.
 
@@ -34,3 +34,9 @@ Bajarlo con `npm run db:down`.
 | `npm run typecheck` | `tsc --noEmit` sin specs |
 | `npm test` | Jest |
 | `npm run build` | Compilación Nest |
+
+## Contribución
+
+Ver [`CONTRIBUTING.md`](./CONTRIBUTING.md) para las convenciones de ramas, commits
+(Conventional Commits) y pull requests. Los hooks de Husky las hacen cumplir
+(`pre-commit`, `commit-msg` y `pre-push`).
