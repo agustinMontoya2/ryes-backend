@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: ryes-postgres
+    environment:
+      POSTGRES_DB: ryes
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - ryes-postgres-data:/var/lib/postgresql/data
+
+volumes:
+  ryes-postgres-data:
