@@ -40,4 +40,11 @@ export default [
       ],
     },
   },
+  {
+    // TypeORM: las relaciones bidireccionales forman ciclos de import
+    // inherentes; son seguros en runtime (arrows lazy).
+    name: "imports/allow-typeorm-entity-cycles",
+    files: ["src/infrastructure/orm/entities/**"],
+    rules: { "import/no-cycle": "off" },
+  },
 ];
