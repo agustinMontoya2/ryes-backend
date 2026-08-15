@@ -17,9 +17,11 @@ export default [
     rules: {
       ...tseslint.configs.recommended.rules,
 
-      // Convención `import type`: SIN regla de lint a propósito.
+      // Convención `import type`: SIN regla global a propósito.
       // Las clases usadas como DI tokens (controllers inyectando un provider)
       // requieren value import para emitir design:paramtypes correcto en Nest.
+      // Excepción scoped: migraciones (TypeORM las carga con require/import en
+      // runtime; un value import rompe el arranque en Node 24 + ESM).
       "@typescript-eslint/consistent-type-imports": "off",
 
       // Nunca `any`.
@@ -86,6 +88,19 @@ export default [
             ],
           },
         },
+      ],
+    },
+  },
+  {
+    name: "typescript/type-only-migration-imports",
+    files: ["src/infrastructure/migrations/**"],
+    plugins: {
+      "@typescript-eslint": tseslint,
+    },
+    rules: {
+      "@typescript-eslint/consistent-type-imports": [
+        "error",
+        { prefer: "type-imports", disallowTypeAnnotations: false },
       ],
     },
   },

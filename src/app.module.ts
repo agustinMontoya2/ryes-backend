@@ -6,6 +6,12 @@ import { AppExceptionFilter } from "./common/exceptions/app-exception.filter";
 import { ResponseInterceptor } from "./common/interceptors/response.interceptor";
 import config from "./config/config";
 import { configSchema } from "./config/config.schema";
+import { BranchesController } from "./controllers/branches.controller";
+import { DentistsController } from "./controllers/dentists.controller";
+import { OrdersController } from "./controllers/orders.controller";
+import { PatientsController } from "./controllers/patients.controller";
+import { ReportsController } from "./controllers/reports.controller";
+import { ServicesController } from "./controllers/services.controller";
 import { PostgresqlModule } from "./infrastructure/postgresql/postgresql.module";
 
 @Module({
@@ -17,7 +23,14 @@ import { PostgresqlModule } from "./infrastructure/postgresql/postgresql.module"
     }),
     PostgresqlModule,
   ],
-  controllers: [],
+  controllers: [
+    BranchesController,
+    PatientsController,
+    DentistsController,
+    ServicesController,
+    OrdersController,
+    ReportsController,
+  ],
   providers: [
     { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
     { provide: APP_FILTER, useClass: AppExceptionFilter },
