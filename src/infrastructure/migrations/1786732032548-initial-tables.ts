@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import type { MigrationInterface, QueryRunner } from "typeorm";
 
 export class InitialTables1786732032548 implements MigrationInterface {
   name = "InitialTables1786732032548";
@@ -132,7 +132,9 @@ END $$`,
       `DROP INDEX IF EXISTS "public"."IDX_16ca6b683862017de3f27acaa8"`,
     );
     await queryRunner.query(`DROP TABLE IF EXISTS "orders"`);
-    await queryRunner.query(`DROP TYPE IF EXISTS "public"."orders_status_enum"`);
+    await queryRunner.query(
+      `DROP TYPE IF EXISTS "public"."orders_status_enum"`,
+    );
     await queryRunner.query(
       `DROP INDEX IF EXISTS "public"."IDX_0225d2822d3a4a82c3b9bcc7b5"`,
     );

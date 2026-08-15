@@ -41,6 +41,11 @@ export const responseExceptionsDefinition = {
     "Validation error",
     HttpStatus.BAD_REQUEST,
   ),
+  UNPROCESSABLE_ENTITY: defineResponseExceptionsDefinition(
+    "Unprocessable entity",
+    HttpStatus.UNPROCESSABLE_ENTITY,
+    "Business rule violation",
+  ),
   INTERNAL_SERVER_ERROR: defineResponseExceptionsDefinition(
     "Internal server error",
     HttpStatus.INTERNAL_SERVER_ERROR,

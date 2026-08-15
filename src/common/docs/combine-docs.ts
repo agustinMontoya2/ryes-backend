@@ -1,7 +1,6 @@
 import type { ControllerApiDocs, SuccessDefinition } from "./types";
 import type { ResponseExceptionsEnum } from "../exceptions/response-exceptions.enum";
 
-
 export function combineDocs<T>(
   success: Record<keyof T, SuccessDefinition>,
   errors: Record<keyof T, ResponseExceptionsEnum[]>,
