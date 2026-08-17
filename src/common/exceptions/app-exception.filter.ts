@@ -1,4 +1,4 @@
-import { BadRequestException, Catch, HttpException } from "@nestjs/common";
+import { BadRequestException, Catch, HttpException, Logger } from "@nestjs/common";
 
 import { AppError } from "./app-error.exception";
 
@@ -21,11 +21,26 @@ function getApiPath(request: Request): string {
 
 @Catch()
 export class AppExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(AppExceptionFilter.name);
+
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
-    const envelope = this.toEnvelope(exception, getApiPath(request));
+    const path = getApiPath(request);
+
+    if (exception instanceof AppError) {
+      this.logger.warn(
+        `[${exception.errorCode}] ${path} - ${exception.message}`,
+      );
+    } else {
+      this.logger.error(
+        `Unhandled exception at ${path}`,
+        exception instanceof Error ? exception.stack : exception,
+      );
+    }
+
+    const envelope = this.toEnvelope(exception, path);
     response.status(envelope.statusCode).json(envelope);
   }
 

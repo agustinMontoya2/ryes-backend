@@ -19,6 +19,11 @@ export const servicesSuccess = {
     statusCode: HttpStatus.OK,
     serializer: ServiceSerializer,
   },
+  getByName: {
+    message: "Servicio encontrado",
+    statusCode: HttpStatus.OK,
+    serializer: ServiceSerializer,
+  },
   update: {
     message: "Servicio actualizado",
     statusCode: HttpStatus.OK,

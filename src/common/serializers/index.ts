@@ -1,4 +1,4 @@
-export * from "./branch.serializer";
+export * from "./branchs/branch.serializer";
 export * from "./dentists/dentist.serializer";
 export * from "./generic-id.serializer";
 export * from "./orders/order.serializer";

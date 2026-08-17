@@ -7,6 +7,10 @@ export const servicesErrors = {
     ResponseExceptionsEnum.INVALID_INPUT,
     ResponseExceptionsEnum.RESOURCE_NOT_FOUND,
   ],
+  getByName: [
+    ResponseExceptionsEnum.INVALID_INPUT,
+    ResponseExceptionsEnum.RESOURCE_NOT_FOUND,
+  ],
   update: [
     ResponseExceptionsEnum.INVALID_INPUT,
     ResponseExceptionsEnum.RESOURCE_NOT_FOUND,
@@ -15,5 +19,6 @@ export const servicesErrors = {
     ResponseExceptionsEnum.INVALID_INPUT,
     ResponseExceptionsEnum.RESOURCE_NOT_FOUND,
     ResponseExceptionsEnum.RESOURCE_ALREADY_EXISTS,
+    ResponseExceptionsEnum.SERVICE_HAS_RELATED_ORDERS,
   ],
 };

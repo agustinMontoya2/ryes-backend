@@ -4,6 +4,7 @@ export const ordersErrors = {
   list: [ResponseExceptionsEnum.INVALID_INPUT],
   create: [
     ResponseExceptionsEnum.INVALID_INPUT,
+    ResponseExceptionsEnum.RESOURCE_NOT_FOUND,
     ResponseExceptionsEnum.UNPROCESSABLE_ENTITY,
   ],
   get: [
