@@ -7,11 +7,15 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from "@nestjs/common";
 import { ApiParam } from "@nestjs/swagger";
 
 import { ApiDocumentation, BranchId } from "@common/decorators";
+import { BranchExistsGuard } from "@common/guards";
 import { uuidParam } from "@common/helpers";
+
+import { PatientsService } from "../services";
 
 import { patientsApiDocs } from "./docs";
 import { PaginationDto, UuidParamDto } from "./dtos/common";
@@ -20,48 +24,50 @@ import {
   LookupPatientQueryDto,
   UpdatePatientDto,
 } from "./dtos/patients";
-import { placeholderId, placeholderPatient } from "./placeholders";
 
 @Controller("patients")
 @ApiDocumentation(patientsApiDocs)
+@UseGuards(BranchExistsGuard)
 export class PatientsController {
+  constructor(private readonly patientsService: PatientsService) {}
+
   @Get()
-  list(@Query() _query: PaginationDto, @BranchId() _branchId: string) {
-    return [];
+  list(@Query() query: PaginationDto, @BranchId() branchId: string) {
+    return this.patientsService.list(branchId, query);
   }
 
   @Get("lookup")
   lookup(
-    @Query() _query: LookupPatientQueryDto,
-    @BranchId() _branchId: string,
+    @Query() query: LookupPatientQueryDto,
+    @BranchId() branchId: string,
   ) {
-    return placeholderPatient();
+    return this.patientsService.lookup(branchId, query.dni);
   }
 
   @Post()
-  create(@Body() _body: CreatePatientDto, @BranchId() _branchId: string) {
-    return { id: placeholderId() };
+  create(@Body() body: CreatePatientDto, @BranchId() branchId: string) {
+    return this.patientsService.create(branchId, body);
   }
 
   @Get(":id")
   @ApiParam(uuidParam("Paciente"))
-  get(@Param() params: UuidParamDto, @BranchId() _branchId: string) {
-    return placeholderPatient({ id: params.id });
+  get(@Param() params: UuidParamDto, @BranchId() branchId: string) {
+    return this.patientsService.get(branchId, params.id);
   }
 
   @Put(":id")
   @ApiParam(uuidParam("Paciente"))
   update(
     @Param() params: UuidParamDto,
-    @Body() _body: UpdatePatientDto,
-    @BranchId() _branchId: string,
+    @Body() body: UpdatePatientDto,
+    @BranchId() branchId: string,
   ) {
-    return { id: params.id };
+    return this.patientsService.update(branchId, params.id, body);
   }
 
   @Delete(":id")
   @ApiParam(uuidParam("Paciente"))
-  remove(@Param() params: UuidParamDto, @BranchId() _branchId: string) {
-    return { id: params.id };
+  remove(@Param() params: UuidParamDto, @BranchId() branchId: string) {
+    return this.patientsService.remove(branchId, params.id);
   }
 }

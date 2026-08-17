@@ -7,11 +7,15 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from "@nestjs/common";
 import { ApiParam } from "@nestjs/swagger";
 
 import { ApiDocumentation, BranchId } from "@common/decorators";
+import { BranchExistsGuard } from "@common/guards";
 import { uuidParam } from "@common/helpers";
+
+import { OrdersService } from "../services";
 
 import { ordersApiDocs } from "./docs";
 import { UuidParamDto } from "./dtos/common";
@@ -20,46 +24,48 @@ import {
   ListOrdersQueryDto,
   UpdateOrderDto,
 } from "./dtos/orders";
-import { placeholderId, placeholderOrder } from "./placeholders";
 
 @Controller("orders")
 @ApiDocumentation(ordersApiDocs)
+@UseGuards(BranchExistsGuard)
 export class OrdersController {
+  constructor(private readonly ordersService: OrdersService) {}
+
   @Get()
-  list(@Query() _query: ListOrdersQueryDto, @BranchId() _branchId: string) {
-    return [];
+  list(@Query() query: ListOrdersQueryDto, @BranchId() branchId: string) {
+    return this.ordersService.list(branchId, query);
   }
 
   @Post()
-  create(@Body() _body: CreateOrderDto, @BranchId() _branchId: string) {
-    return { id: placeholderId() };
+  create(@Body() body: CreateOrderDto, @BranchId() branchId: string) {
+    return this.ordersService.create(branchId, body);
   }
 
   @Get(":id")
   @ApiParam(uuidParam("Orden"))
-  get(@Param() params: UuidParamDto, @BranchId() _branchId: string) {
-    return placeholderOrder({ id: params.id });
+  get(@Param() params: UuidParamDto, @BranchId() branchId: string) {
+    return this.ordersService.get(branchId, params.id);
   }
 
   @Put(":id")
   @ApiParam(uuidParam("Orden"))
   update(
     @Param() params: UuidParamDto,
-    @Body() _body: UpdateOrderDto,
-    @BranchId() _branchId: string,
+    @Body() body: UpdateOrderDto,
+    @BranchId() branchId: string,
   ) {
-    return { id: params.id };
+    return this.ordersService.update(branchId, params.id, body);
   }
 
   @Delete(":id")
   @ApiParam(uuidParam("Orden"))
-  remove(@Param() params: UuidParamDto, @BranchId() _branchId: string) {
-    return { id: params.id };
+  remove(@Param() params: UuidParamDto, @BranchId() branchId: string) {
+    return this.ordersService.remove(branchId, params.id);
   }
 
   @Post(":id/complete")
   @ApiParam(uuidParam("Orden"))
-  complete(@Param() params: UuidParamDto, @BranchId() _branchId: string) {
-    return { id: params.id };
+  complete(@Param() params: UuidParamDto, @BranchId() branchId: string) {
+    return this.ordersService.complete(branchId, params.id);
   }
 }

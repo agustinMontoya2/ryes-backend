@@ -50,6 +50,34 @@ export const responseExceptionsDefinition = {
     "Internal server error",
     HttpStatus.INTERNAL_SERVER_ERROR,
   ),
+  PATIENT_HAS_RELATED_ORDERS: defineResponseExceptionsDefinition(
+    "The patient has related orders",
+    HttpStatus.CONFLICT,
+  ),
+  DENTIST_HAS_RELATED_ORDERS: defineResponseExceptionsDefinition(
+    "The dentist has related orders",
+    HttpStatus.CONFLICT,
+  ),
+  SERVICE_HAS_RELATED_ORDERS: defineResponseExceptionsDefinition(
+    "The service has related orders",
+    HttpStatus.CONFLICT,
+  ),
+  DUE_DATE_LESS_THAN_DISPATCH_DATE: defineResponseExceptionsDefinition(
+    "The due date cannot be earlier than the dispatch date.",
+    HttpStatus.BAD_REQUEST,
+  ),
+  ORDER_NOT_PENDING: defineResponseExceptionsDefinition(
+    "The order must have a pending status in order to complete it.",
+    HttpStatus.BAD_REQUEST,
+  ),
+  ORDER_NOT_COMPLETED: defineResponseExceptionsDefinition(
+    "The order must be completed to be added to a report",
+    HttpStatus.UNPROCESSABLE_ENTITY,
+  ),
+  ORDER_ALREADY_IN_REPORT: defineResponseExceptionsDefinition(
+    "The order is already associated with a report",
+    HttpStatus.CONFLICT,
+  ),
 } satisfies Record<
   keyof typeof ResponseExceptionsEnum,
   IResponseExceptionsDefinition

@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Expose, Type } from "class-transformer";
+import { Expose, Transform, Type } from "class-transformer";
 
 import { OrderSerializer } from "../orders/order.serializer";
 
@@ -22,6 +22,7 @@ export class JobReportSerializer {
 
   @ApiProperty({ type: () => [OrderSerializer] })
   @Expose()
+  @Transform(({ obj }) => obj.orderLinks?.map((link) => link.orderSnapshot) ?? [])
   @Type(() => OrderSerializer)
   orders: OrderSerializer[];
 

@@ -21,10 +21,12 @@ export class OrderEntity extends BaseEntity {
   @Column({ name: "branch_id", type: "uuid" })
   branchId: string;
 
+  @Index()
   @ManyToOne(() => PatientEntity, { nullable: false })
   @JoinColumn({ name: "patient_id" })
   patient: PatientEntity;
 
+  @Index()
   @ManyToOne(() => DentistEntity, { nullable: false })
   @JoinColumn({ name: "dentist_id" })
   dentist: DentistEntity;

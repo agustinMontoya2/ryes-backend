@@ -1,14 +1,27 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { ArrayMinSize, IsDateString, IsOptional, IsString, IsUUID } from "class-validator";
+import { Type } from "class-transformer";
+import {
+  ArrayMinSize,
+  IsDateString,
+  IsOptional,
+  IsString,
+  IsUUID,
+  ValidateNested,
+} from "class-validator";
+
+import { DentistOrderDto } from "./dentist-order.dto";
+import { PatientOrderDto } from "./patient-order.dto";
 
 export class CreateOrderDto {
-  @ApiProperty({ format: "uuid" })
-  @IsUUID()
-  patientId: string;
+  @ApiProperty({ type: () => PatientOrderDto })
+  @ValidateNested()
+  @Type(() => PatientOrderDto)
+  patient: PatientOrderDto;
 
-  @ApiProperty({ format: "uuid" })
-  @IsUUID()
-  dentistId: string;
+  @ApiProperty({ type: () => DentistOrderDto })
+  @ValidateNested()
+  @Type(() => DentistOrderDto)
+  dentist: DentistOrderDto;
 
   @ApiProperty({ type: [String], minItems: 1 })
   @IsUUID("4", { each: true })
@@ -19,7 +32,10 @@ export class CreateOrderDto {
   @IsDateString()
   dispatchDate: string;
 
-  @ApiProperty({ example: "2026-08-21", description: "Debe ser >= dispatchDate" })
+  @ApiProperty({
+    example: "2026-08-21",
+    description: "Debe ser >= dispatchDate",
+  })
   @IsDateString()
   dueDate: string;
 

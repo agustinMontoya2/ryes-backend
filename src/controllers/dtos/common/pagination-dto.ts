@@ -13,7 +13,7 @@ export class PaginationDto {
   @Transform(({ value }) => Number(value))
   @IsInt()
   @Min(1)
-  page?: number;
+  page: number = 1;
 
   @ApiPropertyOptional({ minimum: 1, maximum: 100, default: 10 })
   @IsOptional()
@@ -21,7 +21,7 @@ export class PaginationDto {
   @IsInt()
   @Min(1)
   @Max(100)
-  limit?: number;
+  limit: number = 10;
 
   @ApiPropertyOptional({ example: "price" })
   @IsOptional()
