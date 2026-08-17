@@ -1,9 +1,8 @@
 import { Injectable } from "@nestjs/common";
 
 import { OrderStatusEnum } from "@common/enums/order-status.enum";
+import { AppError, ResponseExceptionsEnum } from "@common/exceptions";
 
-import { AppError } from "../common/exceptions/app-error.exception";
-import { ResponseExceptionsEnum } from "../common/exceptions/response-exceptions.enum";
 import { PaginationDto } from "../controllers/dtos/common";
 import { CreateOrderDto, UpdateOrderDto } from "../controllers/dtos/orders";
 import {
@@ -33,14 +32,12 @@ export class OrdersService {
     branchId: string,
     query: PaginationDto & { status?: OrderStatusEnum },
   ): Promise<PaginatedResult<OrderEntity>> {
-    const page = query.page ?? 1;
-    const limit = query.limit ?? 10;
     const { data, total } = await this.orderRepository.listPaginated(branchId, {
-      page,
-      limit,
+      page: query.page,
+      limit: query.limit,
       status: query.status,
     });
-    return { data, pagination: buildPagination(total, page, limit) };
+    return { data, pagination: buildPagination(total, query.page, query.limit) };
   }
 
   async create(branchId: string, dto: CreateOrderDto): Promise<{ id: string }> {
@@ -94,7 +91,7 @@ export class OrdersService {
     id: string,
     dto: UpdateOrderDto,
   ): Promise<{ id: string }> {
-    await this.get(branchId, id);
+    const current = await this.get(branchId, id);
 
     const data: Partial<OrderEntity> = {};
 
@@ -104,15 +101,23 @@ export class OrdersService {
     if (dto.dueDate) {
       data.dueDate = new Date(dto.dueDate);
     }
+    if (data.dispatchDate && data.dispatchDate < new Date()) {
+      throw new AppError(ResponseExceptionsEnum.INVALID_INPUT, {
+        property: "dispatchDate",
+      });
+    }
+    if (data.dueDate && data.dueDate < new Date()) {
+      throw new AppError(ResponseExceptionsEnum.INVALID_INPUT, {
+        property: "dueDate",
+      });
+    }
     if (data.dispatchDate || data.dueDate) {
-      const current = await this.orderRepository.findByIdAndBranch(
-        id,
-        branchId,
-      );
-      const dispatch = data.dispatchDate ?? current!.dispatchDate;
-      const due = data.dueDate ?? current!.dueDate;
+      const dispatch = data.dispatchDate ?? current.dispatchDate;
+      const due = data.dueDate ?? current.dueDate;
       if (due < dispatch) {
-        throw new AppError(ResponseExceptionsEnum.UNPROCESSABLE_ENTITY);
+        throw new AppError(
+          ResponseExceptionsEnum.DUE_DATE_LESS_THAN_DISPATCH_DATE,
+        );
       }
     }
 

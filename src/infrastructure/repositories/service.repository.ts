@@ -4,20 +4,14 @@ import { Repository } from "typeorm";
 
 import { ServiceEntity } from "../orm/entities";
 
+import { type ListPaginatedOptions, resolveOrder } from "./repository.helpers";
+
 const ORDER_BY_WHITELIST = [
   "name",
   "price",
   "createdAt",
   "updatedAt",
 ] as const;
-
-export interface ServiceListPaginatedOptions {
-  search?: string;
-  page: number;
-  limit: number;
-  orderBy?: string;
-  orderType?: string;
-}
 
 @Injectable()
 export class ServiceRepository {
@@ -28,7 +22,7 @@ export class ServiceRepository {
 
   async listPaginated(
     branchId: string,
-    options: ServiceListPaginatedOptions,
+    options: ListPaginatedOptions,
   ): Promise<{ data: ServiceEntity[]; total: number }> {
     const query = this.serviceRepository
       .createQueryBuilder("service")
@@ -40,14 +34,12 @@ export class ServiceRepository {
       });
     }
 
-    const orderBy =
-      options.orderBy !== undefined &&
-      (ORDER_BY_WHITELIST as readonly string[]).includes(options.orderBy)
-        ? options.orderBy
-        : "createdAt";
-    const orderType =
-      options.orderType?.toUpperCase() === "DESC" ? "DESC" : "ASC";
-    query.orderBy(`service.${orderBy}`, orderType);
+    const { column, direction } = resolveOrder(
+      options.orderBy,
+      options.orderType,
+      ORDER_BY_WHITELIST,
+    );
+    query.orderBy(`service.${column}`, direction);
 
     const [data, total] = await query
       .skip((options.page - 1) * options.limit)

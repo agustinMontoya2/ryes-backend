@@ -1,8 +1,9 @@
 import { Injectable } from "@nestjs/common";
+import { DataSource } from "typeorm";
 
-import { OrderStatusEnum } from "../common/enums/order-status.enum";
-import { AppError } from "../common/exceptions/app-error.exception";
-import { ResponseExceptionsEnum } from "../common/exceptions/response-exceptions.enum";
+import { OrderStatusEnum } from "@common/enums/order-status.enum";
+import { AppError, ResponseExceptionsEnum } from "@common/exceptions";
+
 import { PaginationDto } from "../controllers/dtos/common";
 import { CreateReportDto } from "../controllers/dtos/reports";
 import { JobReportEntity, OrderEntity } from "../infrastructure/orm/entities";
@@ -17,6 +18,7 @@ import { buildPagination, type PaginatedResult } from "./pagination.helper";
 @Injectable()
 export class ReportsService {
   constructor(
+    private readonly dataSource: DataSource,
     private readonly jobReportRepository: JobReportRepository,
     private readonly jobReportOrderRepository: JobReportOrderRepository,
     private readonly orderRepository: OrderRepository,
@@ -26,14 +28,12 @@ export class ReportsService {
     branchId: string,
     query: PaginationDto,
   ): Promise<PaginatedResult<JobReportEntity>> {
-    const page = query.page ?? 1;
-    const limit = query.limit ?? 10;
     const { data, total } = await this.jobReportRepository.listPaginated(
       branchId,
-      { page, limit },
+      { page: query.page, limit: query.limit },
     );
 
-    return { data, pagination: buildPagination(total, page, limit) };
+    return { data, pagination: buildPagination(total, query.page, query.limit) };
   }
 
   async create(
@@ -78,39 +78,50 @@ export class ReportsService {
       0,
     );
 
-    const report = await this.jobReportRepository.create({
-      branchId,
-      deliveryDate: new Date(dto.deliveryDate),
-      totalPrice,
-    });
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const report = await this.jobReportRepository.create({
+        branchId,
+        deliveryDate: new Date(dto.deliveryDate),
+        totalPrice,
+      });
 
-    await Promise.all(
-      orders.map((order) => {
-        const snapshot = {
-          id: order.id,
-          patient: order.patient,
-          dentist: order.dentist,
-          services: order.services,
-          dispatchDate: order.dispatchDate,
-          dueDate: order.dueDate,
-          lab: order.lab,
-          status: order.status,
-        };
-        return this.jobReportOrderRepository.create({
-          jobReport: report,
-          order,
-          orderSnapshot: snapshot,
-        });
-      }),
-    );
+      await Promise.all(
+        orders.map((order) => {
+          const snapshot = {
+            id: order.id,
+            patient: order.patient,
+            dentist: order.dentist,
+            services: order.services,
+            dispatchDate: order.dispatchDate,
+            dueDate: order.dueDate,
+            lab: order.lab,
+            status: order.status,
+          };
+          return this.jobReportOrderRepository.create({
+            jobReport: report,
+            order,
+            orderSnapshot: snapshot,
+          });
+        }),
+      );
 
-    await Promise.all(
-      orders.map((order) =>
-        this.orderRepository.setStatus(order.id, OrderStatusEnum.SUBMITTED),
-      ),
-    );
+      await Promise.all(
+        orders.map((order) =>
+          this.orderRepository.setStatus(order.id, OrderStatusEnum.SUBMITTED),
+        ),
+      );
 
-    return { id: report.id };
+      await queryRunner.commitTransaction();
+      return { id: report.id };
+    } catch (e) {
+      await queryRunner.rollbackTransaction();
+      throw e;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   async get(branchId: string, id: string): Promise<JobReportEntity> {

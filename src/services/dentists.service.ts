@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 
-import { AppError } from "../common/exceptions/app-error.exception";
-import { ResponseExceptionsEnum } from "../common/exceptions/response-exceptions.enum";
+import { AppError, ResponseExceptionsEnum } from "@common/exceptions";
+
 import { PaginationDto } from "../controllers/dtos/common";
 import {
   CreateDentistDto,
@@ -27,19 +27,17 @@ export class DentistsService {
     branchId: string,
     query: PaginationDto,
   ): Promise<PaginatedResult<DentistEntity>> {
-    const page = query.page ?? 1;
-    const limit = query.limit ?? 10;
     const { data, total } = await this.dentistRepository.listPaginated(
       branchId,
       {
         search: query.search,
-        page,
-        limit,
+        page: query.page,
+        limit: query.limit,
         orderBy: query.orderBy,
         orderType: query.orderType,
       },
     );
-    return { data, pagination: buildPagination(total, page, limit) };
+    return { data, pagination: buildPagination(total, query.page, query.limit) };
   }
 
   async create(

@@ -4,15 +4,10 @@ import { plainToInstance } from "class-transformer";
 import { map } from "rxjs/operators";
 
 import { SUCCESS_METADATA_KEY, type SuccessMetadata } from "../decorators/success-metadata";
+import { getApiPath } from "../helpers/api-path";
 
 import type { Request, Response } from "express";
 import type { Observable } from "rxjs";
-
-function getApiPath(request: Request): string {
-  const GLOBAL_PREFIX = "/api/v1";
-  const url = (request.originalUrl ?? request.url).split("?")[0] ?? "";
-  return url.startsWith(GLOBAL_PREFIX) ? url.slice(GLOBAL_PREFIX.length) : url;
-}
 
 interface SuccessEnvelope {
   statusCode: number;

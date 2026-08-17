@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 
-import { AppError } from "../common/exceptions/app-error.exception";
-import { ResponseExceptionsEnum } from "../common/exceptions/response-exceptions.enum";
+import { AppError, ResponseExceptionsEnum } from "@common/exceptions";
+
 import { PaginationDto } from "../controllers/dtos/common";
 import {
   CreatePatientDto,
@@ -27,19 +27,17 @@ export class PatientsService {
     branchId: string,
     query: PaginationDto,
   ): Promise<PaginatedResult<PatientEntity>> {
-    const page = query.page ?? 1;
-    const limit = query.limit ?? 10;
     const { data, total } = await this.patientRepository.listPaginated(
       branchId,
       {
         search: query.search,
-        page,
-        limit,
+        page: query.page,
+        limit: query.limit,
         orderBy: query.orderBy,
         orderType: query.orderType,
       },
     );
-    return { data, pagination: buildPagination(total, page, limit) };
+    return { data, pagination: buildPagination(total, query.page, query.limit) };
   }
 
   async lookup(branchId: string, dni: number): Promise<PatientEntity> {
@@ -95,11 +93,6 @@ export class PatientsService {
     dto: UpdatePatientDto,
   ): Promise<{ id: string }> {
     const current = await this.get(branchId, id);
-    if (!current) {
-      throw new AppError(ResponseExceptionsEnum.RESOURCE_NOT_FOUND, {
-        property: "id",
-      });
-    }
     if (dto.dni !== undefined) {
       const conflicting = await this.patientRepository.findByDniAndBranch(
         dto.dni,
@@ -107,7 +100,7 @@ export class PatientsService {
       );
       if (conflicting && conflicting.id !== id) {
         throw new AppError(ResponseExceptionsEnum.RESOURCE_ALREADY_EXISTS, {
-          property: "id",
+          property: "dni",
         });
       }
     }
@@ -130,26 +123,4 @@ export class PatientsService {
     await this.patientRepository.softDelete(id);
     return { id };
   }
-
-  // async upsertForOrder(
-  //   branchId: string,
-  //   data: { fullname: string; dni: number },
-  // ): Promise<string> {
-  //   const existing = await this.patientRepository.findByDniAndBranch(
-  //     data.dni,
-  //     branchId,
-  //     { withDeleted: true },
-  //   );
-  //   if (existing) {
-  //     if (existing.deletedAt) {
-  //       await this.patientRepository.restore(existing.id);
-  //     }
-  //     await this.patientRepository.update(existing.id, {
-  //       fullname: data.fullname,
-  //     });
-  //     return existing.id;
-  //   }
-  //   const patient = await this.patientRepository.create({ branchId, ...data });
-  //   return patient.id;
-  // }
 }

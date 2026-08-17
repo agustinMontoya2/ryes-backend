@@ -18,7 +18,6 @@ export const servicesErrors = {
   remove: [
     ResponseExceptionsEnum.INVALID_INPUT,
     ResponseExceptionsEnum.RESOURCE_NOT_FOUND,
-    ResponseExceptionsEnum.RESOURCE_ALREADY_EXISTS,
     ResponseExceptionsEnum.SERVICE_HAS_RELATED_ORDERS,
   ],
 };

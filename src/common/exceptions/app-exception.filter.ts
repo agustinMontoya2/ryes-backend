@@ -1,4 +1,11 @@
-import { BadRequestException, Catch, HttpException, Logger } from "@nestjs/common";
+import {
+  BadRequestException,
+  Catch,
+  HttpException,
+  Logger,
+} from "@nestjs/common";
+
+import { getApiPath } from "../helpers/api-path";
 
 import { AppError } from "./app-error.exception";
 
@@ -11,12 +18,6 @@ interface ErrorEnvelope {
   message: string;
   details: { path: string; timestamp: string };
   metadata: Record<string, unknown>;
-}
-
-function getApiPath(request: Request): string {
-  const GLOBAL_PREFIX = "/api/v1";
-  const url = (request.originalUrl ?? request.url).split("?")[0] ?? "";
-  return url.startsWith(GLOBAL_PREFIX) ? url.slice(GLOBAL_PREFIX.length) : url;
 }
 
 @Catch()

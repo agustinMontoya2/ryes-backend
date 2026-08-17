@@ -4,10 +4,7 @@ import { Repository } from "typeorm";
 
 import { JobReportEntity } from "../orm/entities";
 
-export interface ReportListPaginatedOptions {
-  page: number;
-  limit: number;
-}
+import { type ListPaginatedOptions } from "./repository.helpers";
 
 @Injectable()
 export class JobReportRepository {
@@ -18,7 +15,7 @@ export class JobReportRepository {
 
   async listPaginated(
     branchId: string,
-    options: ReportListPaginatedOptions,
+    options: ListPaginatedOptions,
   ): Promise<{ data: JobReportEntity[]; total: number }> {
     const query = this.reportRepository
       .createQueryBuilder("report")

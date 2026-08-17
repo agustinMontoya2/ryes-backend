@@ -6,9 +6,9 @@ import { OrderStatusEnum } from "@common/enums/order-status.enum";
 
 import { OrderEntity } from "../orm/entities";
 
-export interface OrderListPaginatedOptions {
-  page: number;
-  limit: number;
+import { type ListPaginatedOptions } from "./repository.helpers";
+
+export interface OrderListPaginatedOptions extends ListPaginatedOptions {
   status?: OrderStatusEnum;
 }
 
@@ -24,17 +24,17 @@ export class OrderRepository {
     options: OrderListPaginatedOptions,
   ): Promise<{ data: OrderEntity[]; total: number }> {
     const query = this.orderRepository
-      .createQueryBuilder("order")
-      .leftJoinAndSelect("order.patient", "patient")
-      .leftJoinAndSelect("order.dentist", "dentist")
-      .leftJoinAndSelect("order.services", "service")
-      .where("order.branchId = :branchId", { branchId });
+      .createQueryBuilder("o")
+      .leftJoinAndSelect("o.patient", "patient")
+      .leftJoinAndSelect("o.dentist", "dentist")
+      .leftJoinAndSelect("o.services", "service")
+      .where("o.branchId = :branchId", { branchId });
 
     if (options.status) {
-      query.andWhere("order.status = :status", { status: options.status });
+      query.andWhere("o.status = :status", { status: options.status });
     }
 
-    query.orderBy("order.createdAt", "DESC");
+    query.orderBy("o.createdAt", "DESC");
 
     const [data, total] = await query
       .skip((options.page - 1) * options.limit)
@@ -59,15 +59,10 @@ export class OrderRepository {
   }
 
   async update(id: string, data: Partial<OrderEntity>): Promise<void> {
-    const { services, ...rest } = data;
-    await this.orderRepository.update({ id }, rest);
-    if (services) {
-      const order = await this.orderRepository.findOne({ where: { id } });
-      if (order) {
-        order.services = services;
-        await this.orderRepository.save(order);
-      }
-    }
+    await this.orderRepository.save(this.orderRepository.merge(
+      this.orderRepository.create({ id }),
+      data,
+    ));
   }
 
   async softDelete(id: string): Promise<void> {
@@ -83,27 +78,27 @@ export class OrderRepository {
 
   countByPatientId(patientId: string, branchId: string): Promise<number> {
     return this.orderRepository
-      .createQueryBuilder("order")
-      .innerJoin("order.patient", "patient")
-      .where("order.branchId = :branchId", { branchId })
+      .createQueryBuilder("o")
+      .innerJoin("o.patient", "patient")
+      .where("o.branchId = :branchId", { branchId })
       .andWhere("patient.id = :patientId", { patientId })
       .getCount();
   }
 
   countByDentistId(dentistId: string, branchId: string): Promise<number> {
     return this.orderRepository
-      .createQueryBuilder("order")
-      .innerJoin("order.dentist", "dentist")
-      .where("order.branchId = :branchId", { branchId })
+      .createQueryBuilder("o")
+      .innerJoin("o.dentist", "dentist")
+      .where("o.branchId = :branchId", { branchId })
       .andWhere("dentist.id = :dentistId", { dentistId })
       .getCount();
   }
 
   countByServiceId(serviceId: string, branchId: string): Promise<number> {
     return this.orderRepository
-      .createQueryBuilder("order")
-      .innerJoin("order.services", "service")
-      .where("order.branchId = :branchId", { branchId })
+      .createQueryBuilder("o")
+      .innerJoin("o.services", "service")
+      .where("o.branchId = :branchId", { branchId })
       .andWhere("service.id = :serviceId", { serviceId })
       .getCount();
   }

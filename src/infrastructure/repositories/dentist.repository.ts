@@ -4,20 +4,14 @@ import { Repository } from "typeorm";
 
 import { DentistEntity } from "../orm/entities";
 
+import { type ListPaginatedOptions, resolveOrder } from "./repository.helpers";
+
 const ORDER_BY_WHITELIST = [
   "name",
   "lastname",
   "createdAt",
   "updatedAt",
 ] as const;
-
-export interface DentistListPaginatedOptions {
-  search?: string;
-  page: number;
-  limit: number;
-  orderBy?: string;
-  orderType?: string;
-}
 
 @Injectable()
 export class DentistRepository {
@@ -28,7 +22,7 @@ export class DentistRepository {
 
   async listPaginated(
     branchId: string,
-    options: DentistListPaginatedOptions,
+    options: ListPaginatedOptions,
   ): Promise<{ data: DentistEntity[]; total: number }> {
     const query = this.dentistRepository
       .createQueryBuilder("dentist")
@@ -41,14 +35,12 @@ export class DentistRepository {
       );
     }
 
-    const orderBy =
-      options.orderBy !== undefined &&
-      (ORDER_BY_WHITELIST as readonly string[]).includes(options.orderBy)
-        ? options.orderBy
-        : "createdAt";
-    const orderType =
-      options.orderType?.toUpperCase() === "DESC" ? "DESC" : "ASC";
-    query.orderBy(`dentist.${orderBy}`, orderType);
+    const { column, direction } = resolveOrder(
+      options.orderBy,
+      options.orderType,
+      ORDER_BY_WHITELIST,
+    );
+    query.orderBy(`dentist.${column}`, direction);
 
     const [data, total] = await query
       .skip((options.page - 1) * options.limit)
