@@ -3,10 +3,14 @@ import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
 
+import { TokenTypeEnum } from "@common/enums";
 import { AppError, ResponseExceptionsEnum } from "@common/exceptions";
 
 import config from "../../config/config";
-import { UserRepository } from "../../infrastructure/repositories";
+import {
+  AuthTokenRepository,
+  UserRepository,
+} from "../../infrastructure/repositories";
 
 import type { ForgotPasswordDto } from "./dto/forgot-password.dto";
 import type { LoginDto } from "./dto/login.dto";
@@ -15,10 +19,17 @@ import type { RegisterDto } from "./dto/register.dto";
 import type { ResetPasswordDto } from "./dto/reset-password.dto";
 import type { ConfigType } from "@nestjs/config";
 
+interface TokenPayload {
+  sub: string;
+  isSuperAdmin?: boolean;
+  type: TokenTypeEnum;
+}
+
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userRepository: UserRepository,
+    private readonly authTokenRepository: AuthTokenRepository,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
@@ -31,18 +42,17 @@ export class AuthService {
   }
 
   async register(dto: RegisterDto) {
-    const existingEmail = await this.userRepository.findByEmailOrUsername(
-      dto.email,
-    );
+    const [existingEmail, existingUsername] = await Promise.all([
+      this.userRepository.findByEmailOrUsername(dto.email),
+      this.userRepository.findByEmailOrUsername(dto.username),
+    ]);
+
     if (existingEmail) {
       throw new AppError(ResponseExceptionsEnum.USER_ALREADY_EXISTS, {
         property: "email",
       });
     }
 
-    const existingUsername = await this.userRepository.findByEmailOrUsername(
-      dto.username,
-    );
     if (existingUsername) {
       throw new AppError(ResponseExceptionsEnum.USER_ALREADY_EXISTS, {
         property: "username",
@@ -62,11 +72,7 @@ export class AuthService {
 
     const saved = await this.userRepository.save(user);
 
-    return {
-      id: saved.id,
-      email: saved.email,
-      username: saved.username,
-    };
+    return { id: saved.id };
   }
 
   async login(dto: LoginDto) {
@@ -75,28 +81,19 @@ export class AuthService {
     );
 
     if (!user) {
-      throw new AppError(ResponseExceptionsEnum.INVALID_CREDENTIALS, {
-        property: "credential",
-      });
+      throw new AppError(ResponseExceptionsEnum.INVALID_CREDENTIALS);
     }
 
     const isPasswordValid = await bcrypt.compare(dto.password, user.password);
 
     if (!isPasswordValid) {
-      throw new AppError(ResponseExceptionsEnum.INVALID_CREDENTIALS, {
-        property: "password",
-      });
+      throw new AppError(ResponseExceptionsEnum.INVALID_CREDENTIALS);
     }
 
-    const accessToken = this.jwtService.sign(
-      { sub: user.id, isSuperAdmin: user.isSuperAdmin },
-      { expiresIn: this.authConfig.JWT_EXPIRATION },
-    );
+    const accessToken = this.generateAccessToken(user);
+    const refreshToken = this.generateRefreshToken(user);
 
-    const refreshToken = this.jwtService.sign(
-      { sub: user.id, isSuperAdmin: user.isSuperAdmin, type: "refresh" },
-      { expiresIn: this.authConfig.REFRESH_TOKEN_EXPIRATION },
-    );
+    await this.persistToken(user.id, refreshToken, TokenTypeEnum.REFRESH, 7);
 
     return { accessToken, refreshToken };
   }
@@ -107,40 +104,42 @@ export class AuthService {
     );
 
     if (!user) {
-      return { resetToken: null };
+      return { success: true };
     }
 
     const resetToken = this.jwtService.sign(
-      { sub: user.id, type: "reset" },
+      { sub: user.id, type: TokenTypeEnum.RESET },
       { expiresIn: "15m" },
     );
 
-    return { resetToken };
+    await this.authTokenRepository.invalidateAllForUser(
+      user.id,
+      TokenTypeEnum.RESET,
+    );
+    await this.persistToken(user.id, resetToken, TokenTypeEnum.RESET, 0, 15);
+
+    // TODO: implementar envío de email con token de reseteo
+    // await this.emailService.sendResetPassword(user.email, resetToken);
+
+    return { success: true };
   }
 
   async resetPassword(dto: ResetPasswordDto) {
-    let payload: { sub: string; type: string };
+    const payload = this.verifyToken(dto.token, TokenTypeEnum.RESET);
 
-    try {
-      payload = this.jwtService.verify(dto.token);
-    } catch {
-      throw new AppError(ResponseExceptionsEnum.INVALID_RESET_TOKEN, {
-        property: "token",
-      });
-    }
+    const validToken = await this.authTokenRepository.findValidToken(
+      dto.token,
+      TokenTypeEnum.RESET,
+    );
 
-    if (payload.type !== "reset") {
-      throw new AppError(ResponseExceptionsEnum.INVALID_RESET_TOKEN, {
-        property: "token",
-      });
+    if (!validToken) {
+      throw new AppError(ResponseExceptionsEnum.INVALID_RESET_TOKEN);
     }
 
     const user = await this.userRepository.findById(payload.sub);
 
     if (!user) {
-      throw new AppError(ResponseExceptionsEnum.INVALID_RESET_TOKEN, {
-        property: "token",
-      });
+      throw new AppError(ResponseExceptionsEnum.INVALID_RESET_TOKEN);
     }
 
     user.password = await bcrypt.hash(
@@ -149,39 +148,107 @@ export class AuthService {
     );
     await this.userRepository.save(user);
 
-    return { success: true };
+    await this.authTokenRepository.markAsUsed(dto.token);
+
+    return { id: user.id };
   }
 
   async refresh(dto: RefreshTokenDto) {
-    let payload: { sub: string; type: string };
+    const payload = this.verifyToken(dto.refreshToken, TokenTypeEnum.REFRESH);
 
-    try {
-      payload = this.jwtService.verify(dto.refreshToken);
-    } catch {
-      throw new AppError(ResponseExceptionsEnum.INVALID_CREDENTIALS, {
-        property: "refreshToken",
-      });
-    }
+    const validToken = await this.authTokenRepository.findValidToken(
+      dto.refreshToken,
+      TokenTypeEnum.REFRESH,
+    );
 
-    if (payload.type !== "refresh") {
-      throw new AppError(ResponseExceptionsEnum.INVALID_CREDENTIALS, {
-        property: "refreshToken",
-      });
+    if (!validToken) {
+      throw new AppError(ResponseExceptionsEnum.INVALID_CREDENTIALS);
     }
 
     const user = await this.userRepository.findById(payload.sub);
 
     if (!user) {
-      throw new AppError(ResponseExceptionsEnum.INVALID_CREDENTIALS, {
-        property: "refreshToken",
-      });
+      throw new AppError(ResponseExceptionsEnum.INVALID_CREDENTIALS);
     }
 
-    const accessToken = this.jwtService.sign(
-      { sub: user.id, isSuperAdmin: user.isSuperAdmin },
+    await this.authTokenRepository.markAsUsed(dto.refreshToken);
+
+    const accessToken = this.generateAccessToken(user);
+    const newRefreshToken = this.generateRefreshToken(user);
+
+    await this.persistToken(user.id, newRefreshToken, TokenTypeEnum.REFRESH, 7);
+
+    return { accessToken, refreshToken: newRefreshToken };
+  }
+
+  private verifyToken(
+    token: string,
+    expectedType: TokenTypeEnum,
+  ): TokenPayload {
+    let payload: TokenPayload;
+
+    try {
+      payload = this.jwtService.verify(token);
+    } catch {
+      throw new AppError(
+        expectedType === TokenTypeEnum.REFRESH
+          ? ResponseExceptionsEnum.INVALID_CREDENTIALS
+          : ResponseExceptionsEnum.INVALID_RESET_TOKEN,
+      );
+    }
+
+    if (payload.type !== expectedType) {
+      throw new AppError(
+        expectedType === TokenTypeEnum.REFRESH
+          ? ResponseExceptionsEnum.INVALID_CREDENTIALS
+          : ResponseExceptionsEnum.INVALID_RESET_TOKEN,
+      );
+    }
+
+    return payload;
+  }
+
+  private generateAccessToken(user: {
+    id: string;
+    isSuperAdmin: boolean;
+  }): string {
+    return this.jwtService.sign(
+      {
+        sub: user.id,
+        isSuperAdmin: user.isSuperAdmin,
+        type: TokenTypeEnum.ACCESS,
+      },
       { expiresIn: this.authConfig.JWT_EXPIRATION },
     );
+  }
 
-    return { accessToken };
+  private generateRefreshToken(user: {
+    id: string;
+    isSuperAdmin: boolean;
+  }): string {
+    return this.jwtService.sign(
+      {
+        sub: user.id,
+        isSuperAdmin: user.isSuperAdmin,
+        type: TokenTypeEnum.REFRESH,
+      },
+      { expiresIn: this.authConfig.REFRESH_TOKEN_EXPIRATION },
+    );
+  }
+
+  private async persistToken(
+    userId: string,
+    token: string,
+    type: TokenTypeEnum,
+    daysExpiresIn: number,
+    minutesExpiresIn?: number,
+  ): Promise<void> {
+    const expiresAt = new Date();
+    if (minutesExpiresIn !== undefined) {
+      expiresAt.setMinutes(expiresAt.getMinutes() + minutesExpiresIn);
+    } else {
+      expiresAt.setDate(expiresAt.getDate() + daysExpiresIn);
+    }
+    await this.authTokenRepository.create(userId, token, expiresAt, type);
   }
 }

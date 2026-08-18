@@ -31,10 +31,9 @@ export class UserRepository {
     const qb = this.repo.createQueryBuilder("user");
 
     if (search) {
-      qb.where(
-        "user.email ILIKE :search OR user.username ILIKE :search",
-        { search: `%${search}%` },
-      );
+      qb.where("user.email ILIKE :search OR user.username ILIKE :search", {
+        search: `%${search}%`,
+      });
     }
 
     if (!includeAdmins) {
@@ -42,7 +41,7 @@ export class UserRepository {
       qb[method]("user.is_super_admin = false");
     }
 
-    qb.orderBy("user.createdAt", "DESC")
+    qb.orderBy("user.updatedAt", "DESC")
       .skip((page - 1) * limit)
       .take(limit);
 

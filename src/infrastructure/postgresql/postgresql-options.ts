@@ -6,6 +6,7 @@ import {
   JobReportOrderEntity,
   OrderEntity,
   PatientEntity,
+  AuthTokenEntity,
   ServiceEntity,
   UserBranchEntity,
   UserEntity,
@@ -21,6 +22,7 @@ export const POSTGRESQL_ENTITIES = [
   JobReportOrderEntity,
   UserEntity,
   UserBranchEntity,
+  AuthTokenEntity,
 ];
 
 export function buildPostgresqlOptions(

@@ -4,6 +4,7 @@ export * from "./job-report-order.repository";
 export * from "./job-report.repository";
 export * from "./order.repository";
 export * from "./patient.repository";
+export * from "./auth-token.repository";
 export * from "./service.repository";
 export * from "./user.repository";
 export * from "./user-branch.repository";

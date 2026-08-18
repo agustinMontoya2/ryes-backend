@@ -3,9 +3,8 @@ import { ApiTags } from "@nestjs/swagger";
 
 import { ApiDocumentation } from "@common/decorators";
 
-import { authApiDocs } from "../../controllers/docs";
-
 import { AuthService } from "./auth.service";
+import { authApiDocs } from "./docs";
 import { ForgotPasswordDto } from "./dto/forgot-password.dto";
 import { LoginDto } from "./dto/login.dto";
 import { RefreshTokenDto } from "./dto/refresh-token.dto";

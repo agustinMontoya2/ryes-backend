@@ -5,8 +5,11 @@ import { PassportModule } from "@nestjs/passport";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
 import config from "../../config/config";
-import { UserEntity } from "../../infrastructure/orm/entities";
-import { UserRepository } from "../../infrastructure/repositories";
+import { AuthTokenEntity, UserEntity } from "../../infrastructure/orm/entities";
+import {
+  AuthTokenRepository,
+  UserRepository,
+} from "../../infrastructure/repositories";
 
 import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
@@ -16,7 +19,7 @@ import type { ConfigType } from "@nestjs/config";
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserEntity]),
+    TypeOrmModule.forFeature([UserEntity, AuthTokenEntity]),
     PassportModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
@@ -32,7 +35,7 @@ import type { ConfigType } from "@nestjs/config";
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, UserRepository],
+  providers: [AuthService, JwtStrategy, UserRepository, AuthTokenRepository],
   exports: [AuthService, JwtModule],
 })
 export class AuthModule {}
