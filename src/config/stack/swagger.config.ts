@@ -11,10 +11,10 @@ export function SwaggerConfig() {
     /**
      * ---------------------------------------------------
      * @description Título de la documentación
-     * @default 'Branches API'
+     * @default 'Lab Cv API'
      * ---------------------------------------------------
      */
-    SWAGGER_DOCS_TITLE: process.env.SWAGGER_DOCS_TITLE || "Branches API",
+    SWAGGER_DOCS_TITLE: process.env.SWAGGER_DOCS_TITLE || "Lab Cv API",
 
     /**
      * ---------------------------------------------------
@@ -23,7 +23,8 @@ export function SwaggerConfig() {
      * ---------------------------------------------------
      */
     SWAGGER_DOCS_DESCRIPTION:
-      process.env.SWAGGER_DOCS_DESCRIPTION || "api-documentation-for-development",
+      process.env.SWAGGER_DOCS_DESCRIPTION ||
+      "api-documentation-for-development",
 
     /**
      * ---------------------------------------------------

@@ -2,6 +2,7 @@ export * from "./branches/branch.serializer";
 export * from "./dentists/dentist.serializer";
 export * from "./dentists/dentists-list.serializer";
 export * from "./generic-id.serializer";
+export * from "./generic-success.serializer";
 export * from "./orders/order.serializer";
 export * from "./orders/orders-list.serializer";
 export * from "./pagination.serializer";
