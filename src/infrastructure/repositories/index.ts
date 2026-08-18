@@ -5,3 +5,5 @@ export * from "./job-report.repository";
 export * from "./order.repository";
 export * from "./patient.repository";
 export * from "./service.repository";
+export * from "./user.repository";
+export * from "./user-branch.repository";

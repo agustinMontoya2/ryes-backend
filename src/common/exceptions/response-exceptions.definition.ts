@@ -78,6 +78,18 @@ export const responseExceptionsDefinition = {
     "The order is already associated with a report",
     HttpStatus.CONFLICT,
   ),
+  INVALID_CREDENTIALS: defineResponseExceptionsDefinition(
+    "Invalid credentials",
+    HttpStatus.UNAUTHORIZED,
+  ),
+  INVALID_RESET_TOKEN: defineResponseExceptionsDefinition(
+    "Invalid or expired reset token",
+    HttpStatus.BAD_REQUEST,
+  ),
+  USER_ALREADY_EXISTS: defineResponseExceptionsDefinition(
+    "User already exists",
+    HttpStatus.CONFLICT,
+  ),
 } satisfies Record<
   keyof typeof ResponseExceptionsEnum,
   IResponseExceptionsDefinition

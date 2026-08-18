@@ -6,3 +6,5 @@ export * from "./job-report.orm-entity";
 export * from "./order.orm-entity";
 export * from "./patient.orm-entity";
 export * from "./service.orm-entity";
+export * from "./user.orm-entity";
+export * from "./user-branch.orm-entity";

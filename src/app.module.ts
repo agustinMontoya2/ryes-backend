@@ -13,10 +13,34 @@ import { OrdersController } from "./controllers/orders.controller";
 import { PatientsController } from "./controllers/patients.controller";
 import { ReportsController } from "./controllers/reports.controller";
 import { ServicesController } from "./controllers/services.controller";
-import { BranchEntity, DentistEntity, JobReportEntity, JobReportOrderEntity, OrderEntity, PatientEntity, ServiceEntity } from "./infrastructure/orm/entities";
+import {
+  BranchEntity,
+  DentistEntity,
+  JobReportEntity,
+  JobReportOrderEntity,
+  OrderEntity,
+  PatientEntity,
+  ServiceEntity,
+} from "./infrastructure/orm/entities";
 import { PostgresqlModule } from "./infrastructure/postgresql/postgresql.module";
-import { BranchRepository, DentistRepository, JobReportOrderRepository, JobReportRepository, OrderRepository, PatientRepository, ServiceRepository } from "./infrastructure/repositories";
-import { BranchesService, DentistsService, OrdersService, PatientsService, ReportsService, ServicesService } from "./services";
+import {
+  BranchRepository,
+  DentistRepository,
+  JobReportOrderRepository,
+  JobReportRepository,
+  OrderRepository,
+  PatientRepository,
+  ServiceRepository,
+} from "./infrastructure/repositories";
+import { AuthModule } from "./modules/auth";
+import {
+  BranchesService,
+  DentistsService,
+  OrdersService,
+  PatientsService,
+  ReportsService,
+  ServicesService,
+} from "./services";
 
 @Module({
   imports: [
@@ -35,6 +59,7 @@ import { BranchesService, DentistsService, OrdersService, PatientsService, Repor
       PatientEntity,
       ServiceEntity,
     ]),
+    AuthModule,
   ],
   controllers: [
     BranchesController,
