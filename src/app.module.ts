@@ -13,6 +13,7 @@ import { OrdersController } from "./controllers/orders.controller";
 import { PatientsController } from "./controllers/patients.controller";
 import { ReportsController } from "./controllers/reports.controller";
 import { ServicesController } from "./controllers/services.controller";
+import { UsersController } from "./controllers/users.controller";
 import {
   BranchEntity,
   DentistEntity,
@@ -21,6 +22,8 @@ import {
   OrderEntity,
   PatientEntity,
   ServiceEntity,
+  UserBranchEntity,
+  UserEntity,
 } from "./infrastructure/orm/entities";
 import { PostgresqlModule } from "./infrastructure/postgresql/postgresql.module";
 import {
@@ -31,6 +34,8 @@ import {
   OrderRepository,
   PatientRepository,
   ServiceRepository,
+  UserBranchRepository,
+  UserRepository,
 } from "./infrastructure/repositories";
 import { AuthModule } from "./modules/auth";
 import {
@@ -40,6 +45,7 @@ import {
   PatientsService,
   ReportsService,
   ServicesService,
+  UsersService,
 } from "./services";
 
 @Module({
@@ -58,6 +64,8 @@ import {
       OrderEntity,
       PatientEntity,
       ServiceEntity,
+      UserEntity,
+      UserBranchEntity,
     ]),
     AuthModule,
   ],
@@ -68,6 +76,7 @@ import {
     ServicesController,
     OrdersController,
     ReportsController,
+    UsersController,
   ],
   providers: [
     BranchRepository,
@@ -77,12 +86,15 @@ import {
     OrderRepository,
     PatientRepository,
     ServiceRepository,
+    UserRepository,
+    UserBranchRepository,
     BranchesService,
     DentistsService,
     OrdersService,
     PatientsService,
     ReportsService,
     ServicesService,
+    UsersService,
     { provide: APP_INTERCEPTOR, useClass: ResponseInterceptor },
     { provide: APP_FILTER, useClass: AppExceptionFilter },
   ],

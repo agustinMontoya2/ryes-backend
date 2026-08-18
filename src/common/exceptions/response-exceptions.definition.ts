@@ -90,6 +90,14 @@ export const responseExceptionsDefinition = {
     "User already exists",
     HttpStatus.CONFLICT,
   ),
+  USER_NOT_ADMIN: defineResponseExceptionsDefinition(
+    "User must be admin to access",
+    HttpStatus.UNAUTHORIZED,
+  ),
+  CANNOT_ASSIGN_BRANCHES_TO_SUPER_ADMIN: defineResponseExceptionsDefinition(
+    "Cannot assign branches to a super admin",
+    HttpStatus.UNPROCESSABLE_ENTITY,
+  ),
 } satisfies Record<
   keyof typeof ResponseExceptionsEnum,
   IResponseExceptionsDefinition

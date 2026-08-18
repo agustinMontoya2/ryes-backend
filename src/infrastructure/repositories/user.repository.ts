@@ -26,6 +26,7 @@ export class UserRepository {
     page: number,
     limit: number,
     search?: string,
+    includeAdmins?: boolean,
   ): Promise<[UserEntity[], number]> {
     const qb = this.repo.createQueryBuilder("user");
 
@@ -34,6 +35,11 @@ export class UserRepository {
         "user.email ILIKE :search OR user.username ILIKE :search",
         { search: `%${search}%` },
       );
+    }
+
+    if (!includeAdmins) {
+      const method = search ? "andWhere" : "where";
+      qb[method]("user.is_super_admin = false");
     }
 
     qb.orderBy("user.createdAt", "DESC")

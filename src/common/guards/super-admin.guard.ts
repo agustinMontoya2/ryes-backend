@@ -9,9 +9,7 @@ export class SuperAdminGuard implements CanActivate {
     const user = request.user;
 
     if (!user?.isSuperAdmin) {
-      throw new AppError(ResponseExceptionsEnum.UNAUTHORIZED, {
-        property: "Authorization",
-      });
+      throw new AppError(ResponseExceptionsEnum.USER_NOT_ADMIN);
     }
 
     return true;

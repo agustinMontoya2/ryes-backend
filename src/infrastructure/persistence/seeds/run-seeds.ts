@@ -3,6 +3,7 @@ import { runSeeders } from "typeorm-extension";
 import { appDataSource } from "../data-source";
 
 import BranchSeeder from "./branch.seeder";
+import UserSeeder from "./user.seeder";
 
 async function runSeeds(): Promise<void> {
   try {
@@ -10,7 +11,7 @@ async function runSeeds(): Promise<void> {
     console.warn("Database connection initialized");
 
     await runSeeders(appDataSource, {
-      seeds: [BranchSeeder],
+      seeds: [BranchSeeder, UserSeeder],
       factories: [],
     });
 

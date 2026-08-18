@@ -12,3 +12,4 @@ export * from "./reports/job-report.serializer";
 export * from "./reports/reports-list.serializer";
 export * from "./services/service.serializer";
 export * from "./services/services-list.serializer";
+export * from "./users";
