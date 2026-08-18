@@ -3,10 +3,10 @@ export function PostgresqlConfig() {
     /**
      * ---------------------------------------------------
      * @description Nombre de la base de datos
-     * @default 'branches'
+     * @default 'lab_cv_db'
      * ---------------------------------------------------
      */
-    DB_NAME: process.env.DB_NAME || "branches",
+    DB_NAME: process.env.DB_NAME || "lab_cv_db",
 
     /**
      * ---------------------------------------------------
@@ -55,7 +55,8 @@ export function PostgresqlConfig() {
      * @default false
      * ---------------------------------------------------
      */
-    DB_LOGGING: process.env.DB_LOGGING?.trim().toLowerCase() === "true" || false,
+    DB_LOGGING:
+      process.env.DB_LOGGING?.trim().toLowerCase() === "true" || false,
 
     /**
      * ---------------------------------------------------

@@ -25,4 +25,12 @@ export const configSchema = Joi.object<MixedConfigsForEnvFile>({
   DB_LOGGING: Joi.boolean().optional(),
   DB_DROP_SCHEMA: Joi.boolean().optional(),
   DB_SSL: Joi.boolean().optional(),
+
+  JWT_SECRET: Joi.string().optional(),
+  JWT_EXPIRATION: Joi.string().optional(),
+  REFRESH_TOKEN_EXPIRATION: Joi.string().optional(),
+  BCRYPT_SALT_ROUNDS: Joi.number().integer().optional(),
+  ADMIN_EMAIL: Joi.string().email().optional(),
+  ADMIN_USERNAME: Joi.string().optional(),
+  ADMIN_PASSWORD: Joi.string().optional(),
 });
