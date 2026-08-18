@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { QueryFailedError, Repository } from "typeorm";
+import { Repository } from "typeorm";
 
 import { UserBranchEntity } from "../orm/entities";
 
@@ -11,33 +11,53 @@ export class UserBranchRepository {
     private readonly repo: Repository<UserBranchEntity>,
   ) {}
 
-  async assign(userId: string, branchIds: string[]): Promise<void> {
-    const values = branchIds.map((branchId) => ({ userId, branchId }));
-    try {
+  async sync(userId: string, branchIds: string[]): Promise<void> {
+    await this.repo
+      .createQueryBuilder()
+      .delete()
+      .from(UserBranchEntity)
+      .where("user_id = :userId", { userId })
+      .execute();
+
+    if (branchIds.length > 0) {
+      const values = branchIds.map((branchId) => ({ userId, branchId }));
       await this.repo
         .createQueryBuilder()
         .insert()
         .into(UserBranchEntity)
         .values(values)
+        .onConflict('("user_id", "branch_id") DO NOTHING')
         .execute();
-    } catch (error) {
-      if (error instanceof QueryFailedError && isUniqueViolation(error)) {
-        return;
-      }
-      throw error;
     }
   }
 
-  async unassign(userId: string, branchId: string): Promise<void> {
-    await this.repo.delete({ userId, branchId });
+  findBranchIdsByUserId(userId: string): Promise<string[]> {
+    return this.repo
+      .createQueryBuilder("ub")
+      .select("ub.branch_id")
+      .where("ub.user_id = :userId", { userId })
+      .getRawMany()
+      .then((rows) => rows.map((r) => r.branch_id));
   }
 
-  findByUserId(userId: string): Promise<UserBranchEntity[]> {
-    return this.repo.find({ where: { userId } });
-  }
-}
+  async findBranchIdsByUserIds(
+    userIds: string[],
+  ): Promise<Map<string, string[]>> {
+    if (userIds.length === 0) return new Map();
 
-function isUniqueViolation(error: QueryFailedError): boolean {
-  const driverError = error.driverError as { code?: string };
-  return driverError?.code === "23505";
+    const rows = await this.repo
+      .createQueryBuilder("ub")
+      .select("ub.user_id", "userId")
+      .addSelect("ub.branch_id", "branchId")
+      .where("ub.user_id IN (:...userIds)", { userIds })
+      .getRawMany();
+
+    const map = new Map<string, string[]>();
+    for (const row of rows) {
+      const existing = map.get(row.userId) ?? [];
+      existing.push(row.branchId);
+      map.set(row.userId, existing);
+    }
+    return map;
+  }
 }

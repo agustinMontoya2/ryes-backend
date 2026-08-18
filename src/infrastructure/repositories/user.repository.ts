@@ -4,10 +4,6 @@ import { Repository } from "typeorm";
 
 import { UserEntity } from "../orm/entities";
 
-import { type ListPaginatedOptions, resolveOrder } from "./repository.helpers";
-
-const USER_SEARCH_COLUMNS = ["email", "username"] as const;
-
 @Injectable()
 export class UserRepository {
   constructor(
@@ -27,26 +23,27 @@ export class UserRepository {
   }
 
   findAllPaginated(
-    options: ListPaginatedOptions,
+    page: number,
+    limit: number,
+    search?: string,
+    includeAdmins?: boolean,
   ): Promise<[UserEntity[], number]> {
-    const { column, direction } = resolveOrder(
-      options.orderBy,
-      options.orderType,
-      USER_SEARCH_COLUMNS,
-    );
-
     const qb = this.repo.createQueryBuilder("user");
 
-    if (options.search) {
-      qb.where(
-        "user.email ILIKE :search OR user.username ILIKE :search",
-        { search: `%${options.search}%` },
-      );
+    if (search) {
+      qb.where("user.email ILIKE :search OR user.username ILIKE :search", {
+        search: `%${search}%`,
+      });
     }
 
-    qb.orderBy(`user.${column}`, direction)
-      .skip((options.page - 1) * options.limit)
-      .take(options.limit);
+    if (!includeAdmins) {
+      const method = search ? "andWhere" : "where";
+      qb[method]("user.is_super_admin = false");
+    }
+
+    qb.orderBy("user.updatedAt", "DESC")
+      .skip((page - 1) * limit)
+      .take(limit);
 
     return qb.getManyAndCount();
   }

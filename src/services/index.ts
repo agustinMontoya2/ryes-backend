@@ -4,3 +4,4 @@ export * from "./orders.service";
 export * from "./patients.service";
 export * from "./reports.service";
 export * from "./services.service";
+export * from "./users.service";

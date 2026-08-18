@@ -24,7 +24,9 @@ import type { ConfigType } from "@nestjs/config";
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        const { auth } = configService.get("config") as ConfigType<typeof config>;
+        const { auth } = configService.get("config") as ConfigType<
+          typeof config
+        >;
         return {
           secret: auth.JWT_SECRET,
           signOptions: { expiresIn: auth.JWT_EXPIRATION },
