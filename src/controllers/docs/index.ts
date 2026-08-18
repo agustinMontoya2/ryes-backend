@@ -1,4 +1,3 @@
-export * from "./auth";
 export * from "./branches/branches.docs.registry";
 export * from "./dentists/dentists.docs.registry";
 export * from "./orders/orders.docs.registry";
