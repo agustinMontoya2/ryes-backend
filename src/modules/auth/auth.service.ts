@@ -11,6 +11,7 @@ import {
   AuthTokenRepository,
   UserRepository,
 } from "../../infrastructure/repositories";
+import { EmailService } from "../notification";
 
 import type { ForgotPasswordDto } from "./dto/forgot-password.dto";
 import type { LoginDto } from "./dto/login.dto";
@@ -32,6 +33,7 @@ export class AuthService {
     private readonly authTokenRepository: AuthTokenRepository,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly emailService: EmailService,
   ) {}
 
   private get authConfig() {
@@ -118,8 +120,7 @@ export class AuthService {
     );
     await this.persistToken(user.id, resetToken, TokenTypeEnum.RESET, 0, 15);
 
-    // TODO: implementar envío de email con token de reseteo
-    // await this.emailService.sendResetPassword(user.email, resetToken);
+    await this.emailService.sendResetPasswordEmail(user.email, resetToken);
 
     return { success: true };
   }
