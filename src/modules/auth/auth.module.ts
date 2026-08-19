@@ -10,6 +10,7 @@ import {
   AuthTokenRepository,
   UserRepository,
 } from "../../infrastructure/repositories";
+import { NotificationModule } from "../notification";
 
 import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
@@ -33,6 +34,7 @@ import type { ConfigType } from "@nestjs/config";
         };
       },
     }),
+    NotificationModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, UserRepository, AuthTokenRepository],

@@ -33,4 +33,9 @@ export const configSchema = Joi.object<MixedConfigsForEnvFile>({
   ADMIN_EMAIL: Joi.string().email().optional(),
   ADMIN_USERNAME: Joi.string().optional(),
   ADMIN_PASSWORD: Joi.string().optional(),
+
+  RESEND_API_KEY: Joi.string().optional(),
+  RESET_PASSWORD_URL: Joi.string().uri().optional(),
+  EMAIL_FROM_NAME: Joi.string().optional(),
+  EMAIL_FROM: Joi.string().email().optional(),
 });
