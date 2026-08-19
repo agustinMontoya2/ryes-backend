@@ -36,5 +36,6 @@ export const configSchema = Joi.object<MixedConfigsForEnvFile>({
 
   RESEND_API_KEY: Joi.string().optional(),
   RESET_PASSWORD_URL: Joi.string().uri().optional(),
+  EMAIL_FROM_NAME: Joi.string().optional(),
   EMAIL_FROM: Joi.string().email().optional(),
 });

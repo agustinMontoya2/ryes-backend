@@ -39,7 +39,7 @@ export class EmailService {
     const html = template.replace(/\{\{reset_link\}\}/g, resetUrl);
 
     const { error } = await this.resend.emails.send({
-      from: this.authConfig.EMAIL_FROM,
+      from: `${this.authConfig.EMAIL_FROM_NAME} <${this.authConfig.EMAIL_FROM}>`,
       to,
       subject: "Restablecer contraseña",
       html,
