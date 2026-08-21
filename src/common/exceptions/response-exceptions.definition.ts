@@ -86,6 +86,10 @@ export const responseExceptionsDefinition = {
     "Invalid or expired reset token",
     HttpStatus.BAD_REQUEST,
   ),
+  PASSWORD_SAME_AS_CURRENT: defineResponseExceptionsDefinition(
+    "The new password must be different from the current password",
+    HttpStatus.UNPROCESSABLE_ENTITY,
+  ),
   USER_ALREADY_EXISTS: defineResponseExceptionsDefinition(
     "User already exists",
     HttpStatus.CONFLICT,

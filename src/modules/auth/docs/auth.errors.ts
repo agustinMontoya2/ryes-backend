@@ -12,6 +12,7 @@ export const authErrors = {
   forgotPassword: [ResponseExceptionsEnum.VALIDATION_ERROR],
   resetPassword: [
     ResponseExceptionsEnum.INVALID_RESET_TOKEN,
+    ResponseExceptionsEnum.PASSWORD_SAME_AS_CURRENT,
     ResponseExceptionsEnum.VALIDATION_ERROR,
   ],
   refresh: [

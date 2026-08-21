@@ -143,6 +143,14 @@ export class AuthService {
       throw new AppError(ResponseExceptionsEnum.INVALID_RESET_TOKEN);
     }
 
+    const isSamePassword = await bcrypt.compare(dto.password, user.password);
+
+    if (isSamePassword) {
+      throw new AppError(ResponseExceptionsEnum.PASSWORD_SAME_AS_CURRENT, {
+        property: "password",
+      });
+    }
+
     user.password = await bcrypt.hash(
       dto.password,
       this.authConfig.BCRYPT_SALT_ROUNDS,
